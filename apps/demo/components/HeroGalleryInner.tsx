@@ -795,13 +795,12 @@ export default function HeroGalleryInner() {
           canGoDown={experienceNavCanGoDown}
           onGoUp={onExperienceNavPrev}
           onGoDown={onExperienceNavNext}
-          sectionIndex={experienceNavIndex}
-          sectionCount={EXPERIENCE_SECTION_LAST_INDEX + 1}
         />
       ) : null}
       <main
         id="hero-gallery-main"
-        style={{ minHeight: "100vh", background: "#050508", color: "#fff" }}
+        className="hero-gallery-main"
+        style={{ background: "#050508", color: "#fff" }}
       >
         <div
           ref={originSectionRef}

@@ -312,40 +312,14 @@ html.hero-gallery-experience-scroll.hero-gallery-nav-jump {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0;
-  padding: 4px;
+  gap: 6px;
+  padding: 6px;
   border-radius: 14px;
   background: rgba(10, 10, 14, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
-  --exp-nav-thumb: 0;
-}
-
-/* Piste type scrollbar entre les flèches (desktop = vertical, mobile = horizontal) */
-.experience-section-nav__track {
-  position: relative;
-  flex-shrink: 0;
-  width: 4px;
-  height: 28px;
-  margin: 4px 0;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-  overflow: hidden;
-}
-
-.experience-section-nav__track-thumb {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 11px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.38);
-  box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
-  top: calc(var(--exp-nav-thumb) * (100% - 11px));
-  transition: top 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .experience-section-nav__btn {
@@ -392,33 +366,15 @@ html.hero-gallery-experience-scroll.hero-gallery-nav-jump {
   .experience-section-nav__btn {
     transition: none;
   }
-
-  .experience-section-nav__track-thumb {
-    transition: none;
-  }
 }
 
 @media (max-width: 767px) {
   .experience-section-nav__rail {
     flex-direction: row;
     align-items: center;
-    padding: 3px 5px;
+    gap: 8px;
+    padding: 4px 8px;
     border-radius: 999px;
-  }
-
-  .experience-section-nav__track {
-    width: 40px;
-    height: 4px;
-    margin: 0 2px;
-    order: 0;
-  }
-
-  .experience-section-nav__track-thumb {
-    top: 0;
-    left: calc(var(--exp-nav-thumb) * (100% - 12px));
-    width: 12px;
-    height: 100%;
-    transition: left 0.38s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .experience-section-nav__btn {
@@ -433,17 +389,23 @@ html.hero-gallery-experience-scroll.hero-gallery-nav-jump {
   }
 }
 
-@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
-  .experience-section-nav__track-thumb {
-    transition: none;
-  }
+/* Conteneur /experience : hauteur viewport stable (portrait / paysage, mobile / tablette). */
+.hero-gallery-main {
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  box-sizing: border-box;
 }
 
 .hero-gallery-snap-hero {
   scroll-snap-align: start;
   scroll-snap-stop: always;
   min-height: 100vh;
+  min-height: 100svh;
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
+  box-sizing: border-box;
 }
 
 /* Séparateur plein écran entre les heroes (page /experience) */
@@ -451,7 +413,9 @@ html.hero-gallery-experience-scroll.hero-gallery-nav-jump {
   scroll-snap-align: start;
   scroll-snap-stop: always;
   min-height: 100vh;
+  min-height: 100svh;
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
   width: 100%;
   background: #000000;
   box-sizing: border-box;
@@ -464,7 +428,9 @@ html.hero-gallery-experience-scroll.hero-gallery-nav-jump {
   scroll-snap-align: start;
   scroll-snap-stop: always;
   min-height: 100vh;
+  min-height: 100svh;
   min-height: 100dvh;
+  min-height: -webkit-fill-available;
   width: 100%;
   box-sizing: border-box;
   display: flex;
