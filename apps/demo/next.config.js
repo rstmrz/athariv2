@@ -3,6 +3,8 @@ const path = require("path");
 
 /** Monorepo : file tracing seulement en build prod (évite des 500 bizarres sur `next dev` avec certains chemins Windows / cache). */
 const isProdBuild = process.env.NODE_ENV === "production";
+/** Sur Vercel, outputFileTracingRoot expérimental peut casser le build monorepo ; le déploiement inclut déjà tout le repo. */
+const isVercel = process.env.VERCEL === "1";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -21,7 +23,7 @@ const nextConfig = {
     ];
   },
   experimental: {
-    ...(isProdBuild
+    ...(isProdBuild && !isVercel
       ? { outputFileTracingRoot: path.join(__dirname, "../..") }
       : {}),
   },
