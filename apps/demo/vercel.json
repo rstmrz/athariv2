@@ -1,4 +1,10 @@
 {
   "installCommand": "cd ../.. && npm install",
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "build": {
+    "env": {
+      "NODE_OPTIONS": "--max-old-space-size=4096",
+      "NEXT_IGNORE_INCORRECT_LOCKFILE": "1"
+    }
+  }
 }

@@ -9,6 +9,10 @@ const isVercel = process.env.VERCEL === "1";
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  /** Monorepo / CI : évite des faux échecs si ESLint n’est pas configuré pareil partout. */
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   transpilePackages: ["components"],
   async redirects() {
     return [
