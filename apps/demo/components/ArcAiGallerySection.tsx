@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import ArcGalleryGoldMarquee from "./ArcGalleryGoldMarquee";
 import SectionNameTag from "./SectionNameTag";
 
 const font = {
@@ -464,12 +465,17 @@ export default function ArcAiGallerySection({
   scrollEntrance = false,
   entranceAutoSequence = false,
   sectionTag,
+  arcGalleryCloseRef,
+  arcGalleryOverlayOpenRef,
 }: {
   scrollEntrance?: boolean;
   /** Après clic « Défiler » : enchaîne typewriter → titre remonte → cartes → deck sans scrub au scroll. */
   entranceAutoSequence?: boolean;
   /** Libellé haut-gauche (expérience visuelle), à l’intérieur du sticky scroll. */
   sectionTag?: string;
+  /** /experience : fermeture synchrone de l’aperçu carte (flèches nav). */
+  arcGalleryCloseRef?: React.MutableRefObject<(() => void) | null>;
+  arcGalleryOverlayOpenRef?: React.MutableRefObject<boolean>;
 }) {
   const [active, setActive] = useState(Math.floor(GALLERY.length / 2));
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -506,6 +512,28 @@ export default function ArcAiGallerySection({
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
+
+  const gallerySectionRef = useRef<HTMLElement | null>(null);
+  const [galleryIoVisible, setGalleryIoVisible] = useState(false);
+
+  useEffect(() => {
+    if (!scrollEntrance) {
+      setGalleryIoVisible(false);
+      return;
+    }
+    const el = gallerySectionRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        const e = entries[0];
+        if (!e) return;
+        setGalleryIoVisible(e.isIntersecting && e.intersectionRatio >= 0.22);
+      },
+      { threshold: [0, 0.12, 0.22, 0.35, 0.55, 1] }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [scrollEntrance]);
 
   const go = useCallback((dir: -1 | 1) => {
     setActive((i) => {
@@ -581,13 +609,14 @@ export default function ArcAiGallerySection({
   );
 
   useEffect(() => {
+    if (scrollEntrance) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft") go(-1);
       if (e.key === "ArrowRight") go(1);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [go]);
+  }, [go, scrollEntrance]);
 
   const cardRadius = "clamp(22px, 4.5vw, 30px)";
   const transitionDuration = reduceMotion ? "0.18s" : "0.82s";
@@ -820,6 +849,7 @@ export default function ArcAiGallerySection({
 
   const sectionNode = (
     <section
+      ref={gallerySectionRef}
       id="ai-gallery-arc"
       className="arc-ai-gallery-root"
       style={{
@@ -848,19 +878,6 @@ export default function ArcAiGallerySection({
         background: GALLERY_SECTION_BG,
       }}
     >
-      {scrollEntrance && !reduceMotion ? (
-        <div
-          aria-hidden
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "#000000",
-            opacity: blackOverlayOpacity,
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
-      ) : null}
       <div
         style={{
           position: "relative",
@@ -874,432 +891,36 @@ export default function ArcAiGallerySection({
           minWidth: 0,
         }}
       >
-        {scrollEntrance && !reduceMotion ? (
-          <>
-            <div
-              aria-hidden
-              style={{
-                flex: `${titleAboveSpacerGrow} 1 0px`,
-                minHeight: 0,
-              }}
+        {scrollEntrance ? (
+          <div
+            style={{
+              flex: "1 1 0",
+              width: "100%",
+              minHeight: 0,
+              minWidth: 0,
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+            }}
+          >
+            <ArcGalleryGoldMarquee
+              items={GALLERY}
+              reduceMotion={reduceMotion}
+              narrowMobile={narrowMobile}
+              viewportWidth={viewportWidth}
+              fontSerif={font.serif}
+              fontSans={font.sans}
+              sectionActive={galleryIoVisible}
+              onExposeClose={
+                arcGalleryCloseRef
+                  ? (fn) => {
+                      arcGalleryCloseRef.current = fn;
+                    }
+                  : undefined
+              }
+              overlayOpenRef={arcGalleryOverlayOpenRef}
             />
-            <div
-              style={{
-                flexShrink: 0,
-                width: "100%",
-                display: "flex",
-                justifyContent: "center",
-                boxSizing: "border-box",
-                paddingLeft: "max(0px, env(safe-area-inset-left))",
-                paddingRight: "max(0px, env(safe-area-inset-right))",
-              }}
-            >
-              <h2
-                style={{
-                  margin: 0,
-                  marginLeft: "auto",
-                  marginRight: "auto",
-                  marginBottom: 0,
-                  maxWidth: 900,
-                  width: "100%",
-                  fontFamily: font.serif,
-                  fontSize: "clamp(1.62rem, 4.2vw, 2.82rem)",
-                  fontWeight: 700,
-                  lineHeight: 1.15,
-                  letterSpacing: "-0.02em",
-                  color: "rgba(255,255,255,0.96)",
-                  textAlign: "center",
-                  textShadow: "0 2px 24px rgba(0,0,0,0.45)",
-                  minHeight: "2.5em",
-                  opacity: titleDelicateOpacity,
-                  transform: `translateY(${8 * liftProgress}px) scale(${0.988 + 0.012 * liftProgress})`,
-                  willChange: "opacity, transform",
-                  transition:
-                    !entranceMotionLive
-                      ? "opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1), transform 0.85s cubic-bezier(0.22, 1, 0.36, 1)"
-                      : undefined,
-                }}
-              >
-                {renderGalleryScrollTitle(visibleTitleChars, true, false)}
-              </h2>
-            </div>
-            <div
-              style={{
-                flex: "1 1 0px",
-                minHeight: 0,
-                minWidth: 0,
-                display: "flex",
-                flexDirection: "column",
-                opacity: cardsReveal,
-                pointerEvents:
-                  cardsReveal < 0.04 || showDiscoverOverlay ? "none" : "auto",
-              }}
-            >
-              <div
-                style={{
-                  flex: 1,
-                  minHeight: 0,
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <div
-                  style={{
-                    flex: "0 1 auto",
-                    width: "100%",
-                    maxWidth: 1320,
-                    minHeight: narrowMobile ? 200 : 220,
-                    maxHeight: "min(50svh, 520px)",
-                    minWidth: 0,
-                    marginLeft: "auto",
-                    marginRight: "auto",
-                    position: "relative",
-                  }}
-                >
-                  <div
-                    className="arc-ai-carousel-viewport"
-                    role="group"
-                    aria-label="Galerie, cliquer une vignette pour la centrer ou glisser sur une carte"
-                    style={{
-                      position: "relative",
-                      width: "100%",
-                      height: "100%",
-                      minHeight: "min(42svh, 100%)",
-                      maxHeight: "100%",
-                      marginLeft: "auto",
-                      marginRight: "auto",
-                      touchAction: showDiscoverOverlay ? "auto" : "pan-y",
-                      outline: "none",
-                      boxShadow: "none",
-                    }}
-                  >
-                    {showDiscoverOverlay ? (
-                      <button
-                        type="button"
-                        className="arc-gallery-discover-btn"
-                        onClick={onDiscoverDeckClick}
-                        aria-label="Ouvrir les vignettes de la galerie"
-                        style={{
-                          position: "absolute",
-                          left: "50%",
-                          top: "50%",
-                          transform: "translate(-50%, -50%)",
-                          zIndex: 8000,
-                          pointerEvents: "auto",
-                          padding: "12px 28px",
-                          minHeight: 46,
-                          borderRadius: 4,
-                          border: "1px solid rgba(255,255,255,0.24)",
-                          background: "rgba(255,255,255,0.12)",
-                          backdropFilter: "blur(10px)",
-                          WebkitBackdropFilter: "blur(10px)",
-                          color: "rgba(255,255,255,0.96)",
-                          fontFamily: font.sans,
-                          fontSize: "clamp(0.9rem, 2.4vw, 1rem)",
-                          fontWeight: 600,
-                          letterSpacing: "0.04em",
-                          cursor: "pointer",
-                          boxShadow: "0 10px 36px rgba(0,0,0,0.4)",
-                        }}
-                      >
-                        Ouvrir
-                      </button>
-                    ) : null}
-                    <div
-                      style={{
-                        position: "absolute",
-                        left: "50%",
-                        top: "50%",
-                        width: 0,
-                        height: 0,
-                      }}
-                    >
-                      {GALLERY.map((item, i) => {
-            const d = i - active;
-            const w = wrapDelta(i, active, GALLERY.length);
-            const norm = cardTransform(
-              d,
-              reduceMotion,
-              narrowMobile,
-              w,
-              arcLayout?.gap ?? GAP_ACTIVE_TO_NEIGHBOR_PX,
-              arcLayout?.step ?? STEP_INACTIVE_BETWEEN_PX
-            );
-            const stack = stackDeckTransform(
-              i,
-              GALLERY.length,
-              viewportArc.deckScale
-            );
-            const t =
-              deckProgress >= 0.999 ? norm : blendDeckToCarousel(deckProgress, stack, norm);
-
-            const transform = `translate(-50%, -50%) translateX(${t.translateX}px) translateY(${t.translateY}px) rotate(${t.rotateDeg}deg) scale(${t.scale})`;
-
-            const scrollDriving = entranceMotionLive;
-
-            const shadowSoftFramed =
-              d === 0
-                ? "0 32px 64px rgba(0,0,0,0.52), 0 12px 28px rgba(0,0,0,0.32), 0 0 100px rgba(150, 38, 52, 0.16)"
-                : "0 12px 28px rgba(0,0,0,0.26), 0 4px 12px rgba(0,0,0,0.18)";
-            const shadowSoftFlat =
-              d === 0
-                ? "0 24px 52px rgba(0,0,0,0.5), 0 10px 28px rgba(0,0,0,0.32)"
-                : "0 10px 26px rgba(0,0,0,0.3), 0 4px 12px rgba(0,0,0,0.18)";
-            const shadowSoft = discoverMaskFlat ? shadowSoftFlat : shadowSoftFramed;
-
-            return (
-              <button
-                key={`${item.title}-${i}`}
-                type="button"
-                className="arc-ai-carousel-card"
-                tabIndex={
-                  narrowMobile && Math.abs(w) > 1 ? -1 : undefined
-                }
-                aria-hidden={
-                  narrowMobile && Math.abs(w) > 1 ? true : undefined
-                }
-                aria-current={d === 0 ? "true" : undefined}
-                aria-label={`${item.title}, ${item.rating} stars`}
-                onClick={() => selectCard(i)}
-                onPointerDown={onCardPointerDown}
-                onPointerMove={onCardPointerMove}
-                onPointerUp={onCardPointerUp}
-                onPointerCancel={onCardPointerCancel}
-                onTouchStart={(e) => {
-                  touchStartXRef.current = e.touches[0]?.clientX ?? null;
-                }}
-                onTouchEnd={(e) => {
-                  const start = touchStartXRef.current;
-                  touchStartXRef.current = null;
-                  if (start == null) return;
-                  const dx = e.changedTouches[0].clientX - start;
-                  if (Math.abs(dx) < 56) return;
-                  if (dx > 56) go(-1);
-                  else go(1);
-                  suppressCardClickRef.current = true;
-                  window.setTimeout(() => {
-                    suppressCardClickRef.current = false;
-                  }, 120);
-                }}
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  width: narrowMobile
-                    ? "min(68vw, 252px)"
-                    : viewportWidth < 900
-                      ? "clamp(168px, 36vw, 272px)"
-                      : "clamp(186px, 40vw, 304px)",
-                  aspectRatio: "2 / 3",
-                  padding: 0,
-                  border: "none",
-                  cursor:
-                    narrowMobile
-                      ? w === 0
-                        ? "default"
-                        : "pointer"
-                      : d === 0
-                        ? "default"
-                        : "grab",
-                  borderRadius: cardRadius,
-                  overflow: "hidden",
-                  transform,
-                  opacity: t.opacity,
-                  visibility: t.visibility,
-                  pointerEvents:
-                    showDiscoverOverlay || t.pointerEvents === "none"
-                      ? "none"
-                      : t.pointerEvents,
-                  filter:
-                    t.blurPx > 0
-                      ? `blur(${t.blurPx}px)`
-                      : "none",
-                  zIndex: t.zIndex,
-                  boxShadow: shadowSoft,
-                  transition: scrollDriving
-                    ? "none"
-                    : `transform ${transition}, opacity ${transition}, filter ${transition}, box-shadow ${transition}`,
-                  background: "#121218",
-                  WebkitTapHighlightColor: "transparent",
-                  touchAction: "manipulation",
-                  willChange: reduceMotion ? "auto" : "transform, opacity, filter",
-                }}
-              >
-                <span
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: discoverFlatFace(item.universeColor),
-                    opacity: discoverMaskFlat ? 1 : Math.max(0, 1 - photoDeckReveal),
-                    transition: scrollDriving
-                      ? "none"
-                      : `opacity 0.55s ${EASE_OUT_ORGANIC}`,
-                  }}
-                />
-                <span
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    backgroundImage: `url("${item.src}")`,
-                    backgroundSize: "cover",
-                    backgroundPosition: "center top",
-                    opacity: discoverMaskFlat ? 0 : photoDeckReveal,
-                    transition: scrollDriving
-                      ? "none"
-                      : `opacity 0.55s ${EASE_OUT_ORGANIC}`,
-                  }}
-                />
-                <span
-                  aria-hidden
-                  style={{
-                    position: "absolute",
-                    inset: 0,
-                    background: vignetteUniverseGradient(item.universeColor),
-                    opacity: discoverMaskFlat ? 0 : photoDeckReveal,
-                    transition: scrollDriving
-                      ? "none"
-                      : `opacity 0.45s ${EASE_OUT_ORGANIC}`,
-                  }}
-                />
-
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 14,
-                    left: 14,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    padding: "6px 8px",
-                    borderRadius: 10,
-                    background: "rgba(0,0,0,0.5)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    backdropFilter: "blur(8px)",
-                    WebkitBackdropFilter: "blur(8px)",
-                    opacity: discoverMaskFlat ? 0 : photoDeckReveal,
-                    visibility: discoverMaskFlat ? "hidden" : "visible",
-                  }}
-                >
-                  <StreamingLogo platform={item.platform} />
-                </span>
-
-                <span
-                  style={{
-                    position: "absolute",
-                    top: 14,
-                    right: 14,
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: 5,
-                    padding: "5px 10px",
-                    borderRadius: 10,
-                    fontSize: 13,
-                    fontWeight: 700,
-                    color: "rgba(255,255,255,0.98)",
-                    textShadow: "0 1px 8px rgba(0,0,0,0.85)",
-                    background: "rgba(0,0,0,0.4)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    opacity: discoverMaskFlat ? 0 : photoDeckReveal,
-                    visibility: discoverMaskFlat ? "hidden" : "visible",
-                  }}
-                >
-                  {item.rating}
-                  <span style={{ fontSize: 12, lineHeight: 1 }} aria-hidden>
-                    ★
-                  </span>
-                </span>
-
-                <span
-                  style={{
-                    position: "absolute",
-                    left: 16,
-                    right: 16,
-                    bottom: 16,
-                    textAlign: "left",
-                    opacity: discoverMaskFlat ? 0 : photoDeckReveal,
-                    visibility: discoverMaskFlat ? "hidden" : "visible",
-                  }}
-                >
-                  <span
-                    style={{
-                      display: "block",
-                      fontFamily: font.sans,
-                      fontSize: "clamp(1.05rem, 2.9vw, 1.4rem)",
-                      fontWeight: 800,
-                      lineHeight: 1.12,
-                      color: "#fff",
-                      textShadow: "0 2px 14px rgba(0,0,0,0.85)",
-                    }}
-                  >
-                    {item.title}
-                  </span>
-                  <span
-                    style={{
-                      display: "block",
-                      marginTop: 6,
-                      fontSize: "clamp(11px, 2.4vw, 13px)",
-                      fontWeight: 500,
-                      lineHeight: 1.35,
-                      color: "rgba(255,255,255,0.76)",
-                      textShadow: "0 1px 10px rgba(0,0,0,0.9)",
-                    }}
-                  >
-                    {item.years} · {item.meta}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div
-                role="group"
-                aria-label="Position dans la galerie"
-                style={{
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  gap: 8,
-                  marginTop: oneScreenGallery ? 6 : 14,
-                  flexShrink: 0,
-                  opacity: showDiscoverOverlay ? 0.35 : 1,
-                  pointerEvents: showDiscoverOverlay ? "none" : "auto",
-                  transition: "opacity 0.45s ease",
-                }}
-              >
-                {GALLERY.map((item, i) => (
-                  <button
-                    key={i}
-                    type="button"
-                    aria-label={`${item.title}, vignette ${i + 1} sur ${GALLERY.length}`}
-                    aria-current={i === active ? "true" : undefined}
-                    onClick={() => setActive(i)}
-                    style={{
-                      padding: 0,
-                      border: "none",
-                      cursor: "pointer",
-                      borderRadius: 4,
-                      height: 7,
-                      minWidth: 7,
-                      width: i === active ? 24 : 7,
-                      backgroundColor:
-                        i === active
-                          ? "rgba(255,255,255,0.88)"
-                          : "rgba(255,255,255,0.22)",
-                      transition: `width ${transitionDuration} ${EASE_OUT_ORGANIC}, background-color ${transitionDuration} ${EASE_OUT_ORGANIC}`,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </>
+          </div>
         ) : (
           <>
             <h2
@@ -1307,9 +928,7 @@ export default function ArcAiGallerySection({
                 margin: 0,
                 marginLeft: "auto",
                 marginRight: "auto",
-                marginBottom: scrollEntrance
-                  ? "clamp(16px, 3.2vw, 36px)"
-                  : "clamp(40px, 8vw, 96px)",
+                marginBottom: "clamp(40px, 8vw, 96px)",
                 maxWidth: 900,
                 width: "100%",
                 fontFamily: font.serif,
@@ -1322,11 +941,7 @@ export default function ArcAiGallerySection({
                 textShadow: "0 2px 24px rgba(0,0,0,0.45)",
               }}
             >
-              {scrollEntrance ? (
-                renderGalleryScrollTitle(visibleTitleChars, false, reduceMotion)
-              ) : (
-                <>Create Stunning AI Generated Photos Instantly</>
-              )}
+              Create Stunning AI Generated Photos Instantly
             </h2>
             <div
               style={{

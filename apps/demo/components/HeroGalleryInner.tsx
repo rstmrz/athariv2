@@ -133,6 +133,8 @@ export default function HeroGalleryInner() {
   const morphReverseStartingRef = useRef(false);
   const startReverseMorphRef = useRef<(() => void) | null>(null);
   const galleryArrowRafRef = useRef(0);
+  const arcGalleryCloseRef = useRef<(() => void) | null>(null);
+  const arcGalleryOverlayOpenRef = useRef(false);
 
   const hero1Ref = useRef<HTMLDivElement>(null);
   const originSectionRef = useRef<HTMLDivElement>(null);
@@ -310,6 +312,11 @@ export default function HeroGalleryInner() {
     if (!experienceNavVisible) return;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        if (arcGalleryOverlayOpenRef.current) {
+          flushSync(() => {
+            arcGalleryCloseRef.current?.();
+          });
+        }
         const idx = experienceAnchorSectionIndex(getExpSection);
         if (idx <= 0) return;
         if (idx === 1) {
@@ -332,6 +339,11 @@ export default function HeroGalleryInner() {
     if (!experienceNavVisible) return;
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        if (arcGalleryOverlayOpenRef.current) {
+          flushSync(() => {
+            arcGalleryCloseRef.current?.();
+          });
+        }
         const idx = experienceAnchorSectionIndex(getExpSection);
         if (idx >= EXPERIENCE_SECTION_LAST_INDEX) return;
         if (EXPERIENCE_SCROLL_GATE_ENABLED) {
@@ -863,6 +875,8 @@ export default function HeroGalleryInner() {
           scrollEntrance
           entranceAutoSequence={galleryEntranceFromCue}
           sectionTag="Galerie arc — vignettes"
+          arcGalleryCloseRef={arcGalleryCloseRef}
+          arcGalleryOverlayOpenRef={arcGalleryOverlayOpenRef}
         />
       </main>
     </GalleryErrorBoundary>
