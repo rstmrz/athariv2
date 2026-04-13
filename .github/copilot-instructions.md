@@ -1,0 +1,6 @@
+- [x] copilot-instructions.md créé dans .github
+- [x] Structure monorepo créée (packages/components, apps/demo)
+- [x] Fichiers de configuration et d’exemple générés
+- [ ] Installer les dépendances avec `npm install` à la racine
+- [ ] Lancer le build de la librairie et le dev de l’app
+- [ ] Vérifier le fonctionnement et compléter la documentation

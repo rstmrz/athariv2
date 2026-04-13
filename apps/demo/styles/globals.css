@@ -1,0 +1,654 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  font-family: "Inter", system-ui, -apple-system, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f8f9fa;
+  overflow-x: clip;
+}
+
+/* Expérience visuelle : même si l’hydratation plante, le HTML SSR garde #hero-gallery-main */
+body:has(#hero-gallery-main) {
+  background: #050508;
+}
+
+#__next {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Bibliothèque (/) : fond lisible même si le JS d’hydratation échoue (SSR laisse le HTML). */
+main#library-home {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: linear-gradient(165deg, #e6e9f2 0%, #dce0eb 45%, #eef0f6 100%);
+  color: #14151c;
+}
+
+/* Barre de navigation démo — discrète, fixe en haut */
+.demo-top-nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(4px, 1.5vw, 14px);
+  flex-wrap: wrap;
+  padding: 6px 14px;
+  padding-top: max(6px, env(safe-area-inset-top));
+  background: rgba(6, 6, 10, 0.45);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.demo-top-nav__link {
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 999px;
+  transition:
+    color 0.15s ease,
+    background 0.15s ease;
+}
+
+.demo-top-nav__link:hover {
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.demo-top-nav__link--active {
+  color: rgba(255, 255, 255, 0.95);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.demo-dev-hint {
+  position: fixed;
+  bottom: 8px;
+  left: 10px;
+  z-index: 10040;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-family: ui-monospace, monospace;
+  color: rgba(255, 255, 255, 0.32);
+  background: rgba(0, 0, 0, 0.28);
+  pointer-events: none;
+  max-width: min(280px, 92vw);
+}
+
+/* Page /hero-gallery : fond sombre même si le JS ne tourne pas (évite l’impression d’écran « blanc »). */
+body:has(#hero-gallery-main) {
+  background: #050508;
+}
+
+h1,
+h2 {
+  font-family: inherit;
+}
+
+/* VisionCardSection — dans globals pour éviter mismatch SSR/client sur <style> inline */
+.vision-card-grain {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  opacity: 0.14;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (min-width: 900px) {
+  #vision-card .vision-card-lower {
+    padding-top: 12px !important;
+    padding-bottom: 8px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  #vision-card .vision-card-footer {
+    margin-top: 10px !important;
+    padding-top: 8px !important;
+  }
+}
+
+@media (max-width: 599px) {
+  #vision-card article {
+    border-radius: 20px !important;
+  }
+}
+
+/* ArcAiGallerySection — dans globals pour éviter mismatch SSR/client sur <style> inline */
+.arc-ai-carousel-card:active {
+  cursor: grabbing;
+}
+.arc-ai-carousel-card {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+@keyframes arc-gallery-autres-gradient {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+@keyframes arc-gallery-underline {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.arc-gallery-autres-wrap {
+  position: relative;
+  display: inline;
+}
+.arc-gallery-autres-wrap::after {
+  display: none;
+}
+.arc-gallery-autres {
+  position: relative;
+  display: inline;
+  background: linear-gradient(105deg, #a66a2a 0%, #d8b26a 44%, #f4de9f 72%, #b67d33 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: arc-gallery-autres-gradient 5s ease-in-out infinite;
+}
+
+/* Hero expérience : invite à défiler après le typewriter */
+@keyframes adventure-hero-scroll-cue-bounce {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.82;
+  }
+  50% {
+    transform: translateY(12px);
+    opacity: 1;
+  }
+}
+.adventure-hero-scroll-cue {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: rgba(255, 255, 255, 0.78);
+  text-decoration: none;
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  animation: adventure-hero-scroll-cue-bounce 1.45s ease-in-out infinite;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Collé au bas du hero, sans pousser le titre (overlay sur la section) */
+.adventure-hero-scroll-cue--pinned {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  z-index: 4;
+  margin-top: 0;
+  pointer-events: auto;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.65);
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
+}
+.adventure-hero-scroll-cue:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 6px;
+  border-radius: 4px;
+}
+.adventure-hero-scroll-cue__icon {
+  opacity: 0.95;
+}
+.adventure-hero-scroll-cue--delicate {
+  animation: adventure-hero-scroll-cue-bounce 2.35s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adventure-hero-scroll-cue {
+    animation: none;
+  }
+  .adventure-hero-scroll-cue--delicate {
+    animation: none;
+  }
+  .experience-origin-btn-reveal {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Ancre galerie : léger dégagement (section souvent en un seul écran après « Appuyez ici ») */
+#ai-gallery-arc,
+#experience-gallery-runway {
+  scroll-margin-top: max(10px, env(safe-area-inset-top, 0px));
+}
+
+/* Page /experience : enchaîner hero → galerie (scroll-snap + ancre lisse) */
+html.hero-gallery-experience-scroll {
+  scroll-behavior: smooth;
+  scroll-snap-type: y mandatory;
+}
+
+/* Morph Découvrir → hero 1 : évite le snap animé (scroll visible en plein écran) */
+html.hero-gallery-morph-no-snap.hero-gallery-experience-scroll {
+  scroll-snap-type: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* Saut programmé (flèches nav /experience) : le snap mandatory annule souvent scrollIntoView(smooth). */
+html.hero-gallery-experience-scroll.hero-gallery-nav-jump {
+  scroll-snap-type: none !important;
+  scroll-behavior: auto !important;
+}
+
+/* Masque noir plein écran sous le portail morph (hero originel) */
+.origin-discover-morph-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10058;
+  background: #000000;
+  pointer-events: none;
+}
+
+/* Navigateur sections /experience : visible desktop (≥1024) et mobile (≤767), masqué tablette entre les deux */
+.experience-section-nav {
+  display: none;
+  position: fixed;
+  z-index: 10055;
+  pointer-events: none;
+}
+
+@media (min-width: 1024px) {
+  .experience-section-nav {
+    display: block;
+    right: max(20px, env(safe-area-inset-right, 0px));
+    top: 50%;
+    transform: translateY(-50%);
+  }
+}
+
+@media (max-width: 767px) {
+  .experience-section-nav {
+    display: block;
+    left: 50%;
+    bottom: max(16px, env(safe-area-inset-bottom, 0px));
+    transform: translateX(-50%);
+  }
+}
+
+.experience-section-nav__rail {
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 4px;
+  border-radius: 14px;
+  background: rgba(10, 10, 14, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  --exp-nav-thumb: 0;
+}
+
+/* Piste type scrollbar entre les flèches (desktop = vertical, mobile = horizontal) */
+.experience-section-nav__track {
+  position: relative;
+  flex-shrink: 0;
+  width: 4px;
+  height: 28px;
+  margin: 4px 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.experience-section-nav__track-thumb {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 11px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.38);
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.12);
+  top: calc(var(--exp-nav-thumb) * (100% - 11px));
+  transition: top 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.experience-section-nav__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(248, 248, 252, 0.92);
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    opacity 0.15s ease,
+    transform 0.12s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.experience-section-nav__btn:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
+.experience-section-nav__btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.experience-section-nav__btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.55);
+  outline-offset: 2px;
+}
+
+.experience-section-nav__btn:disabled {
+  opacity: 0.28;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-section-nav__btn {
+    transition: none;
+  }
+
+  .experience-section-nav__track-thumb {
+    transition: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .experience-section-nav__rail {
+    flex-direction: row;
+    align-items: center;
+    padding: 3px 5px;
+    border-radius: 999px;
+  }
+
+  .experience-section-nav__track {
+    width: 40px;
+    height: 4px;
+    margin: 0 2px;
+    order: 0;
+  }
+
+  .experience-section-nav__track-thumb {
+    top: 0;
+    left: calc(var(--exp-nav-thumb) * (100% - 12px));
+    width: 12px;
+    height: 100%;
+    transition: left 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .experience-section-nav__btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+  }
+
+  .experience-section-nav__btn svg {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+@media (max-width: 767px) and (prefers-reduced-motion: reduce) {
+  .experience-section-nav__track-thumb {
+    transition: none;
+  }
+}
+
+.hero-gallery-snap-hero {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Séparateur plein écran entre les heroes (page /experience) */
+.hero-gallery-spacer-black {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  background: #000000;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-gallery-origin {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Intro : bloque la barre de défilement et le défilement tactile (complète les listeners JS). */
+html.hero-gallery-intro-scroll-lock,
+html.hero-gallery-intro-scroll-lock body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+/* Curseur typewriter — hero originel */
+@keyframes experience-origin-caret-blink {
+  0%,
+  45% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.experience-origin-caret::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 0.82em;
+  margin-left: 1px;
+  vertical-align: -0.06em;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.2),
+    rgba(255, 248, 235, 0.85)
+  );
+  animation: experience-origin-caret-blink 1.35s steps(1, end) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-origin-caret::after {
+    animation: none;
+    opacity: 0.75;
+  }
+}
+
+/* Titres hero originel (autres usages) : une ligne + défilement si trop étroit */
+.experience-origin-line-title {
+  white-space: nowrap;
+  font-size: max(0.62rem, min(1.85rem, 4.25vw));
+  padding-left: clamp(24px, 7.5vw, 96px);
+  padding-right: clamp(24px, 7.5vw, 96px);
+  box-sizing: border-box;
+  max-width: 100%;
+  letter-spacing: -0.02em;
+}
+
+/* Accroches hero originel : deux lignes distinctes, retour à la ligne naturel */
+.experience-origin-line-heading {
+  margin: 0;
+  white-space: normal;
+  font-size: max(0.72rem, min(1.55rem, 3.9vw));
+  padding-left: 0;
+  padding-right: 0;
+  box-sizing: border-box;
+  max-width: min(38rem, 100%);
+  width: 100%;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.experience-origin-text-slot-inner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.experience-origin-text-slot-inner--stacked {
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.35rem, 1.2vh, 0.65rem);
+  overflow-x: visible;
+  overflow-y: visible;
+}
+
+.experience-origin-text-slot-inner::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bouton Découvrir : cadre blanc, fond noir, texte blanc */
+.experience-origin-discover-shell {
+  position: relative;
+  display: inline-flex;
+  border-radius: 2px;
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  box-sizing: border-box;
+  background: transparent;
+}
+
+.experience-origin-discover-shell .experience-origin-discover {
+  margin: 0;
+}
+
+.experience-origin-discover:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.65);
+  outline-offset: 3px;
+}
+
+@keyframes experience-origin-btn-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.experience-origin-btn-reveal {
+  animation: experience-origin-btn-reveal 1.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.experience-gallery-runway {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+/* Vision card vidéo inline : on masque le bouton plein écran natif pour ne pas casser le fullscreen global. */
+.vision-card-video-frame::-webkit-media-controls-fullscreen-button {
+  display: none;
+}
+
+.vision-card-video-frame::-webkit-media-controls-picture-in-picture-button {
+  display: none;
+}
+
+.arc-gallery-discover-btn {
+  transition:
+    background 0.35s ease,
+    border-color 0.35s ease,
+    transform 0.25s ease,
+    box-shadow 0.35s ease;
+}
+.arc-gallery-discover-btn:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.34);
+  transform: translateY(-1px);
+}
+.arc-gallery-discover-btn:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.hero-gallery-experience-scroll {
+    scroll-behavior: auto;
+    scroll-snap-type: none;
+  }
+}
+
+/* Titre galerie piloté au scroll (caret) — keyframes partagés avec le hero */
+@keyframes adventure-hero-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.arc-gallery-scroll-caret {
+  display: inline-block;
+  margin-left: 0.06em;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.55);
+  animation: adventure-hero-caret-blink 0.95s steps(1, end) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .arc-gallery-scroll-caret {
+    animation: none;
+    opacity: 0.75;
+  }
+}

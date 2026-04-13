@@ -1,0 +1,23 @@
+{
+  "name": "biblio_composants",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspace=components",
+    "dev": "npm run dev --workspace=demo",
+    "dev:demo": "npm run dev --workspace=demo",
+    "dev:fresh": "npm run clean --workspace=demo && npm run dev --workspace=demo",
+    "dev:reset": "npm run dev:fresh",
+    "dev:simple": "npm run dev:simple --workspace=demo",
+    "dev:3010": "npm run dev:3010 --workspace=demo"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3"
+  },
+  "dependencies": {
+  }
+}

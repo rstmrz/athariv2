@@ -1,0 +1,23 @@
+---
+description: Erreurs app démo Next — relancer serveur et diagnostiquer sans demander à l’utilisateur
+alwaysApply: true
+---
+
+# Erreurs / page blanche / 500 — app `apps/demo`
+
+Dès que l’utilisateur signale une **erreur**, une **page blanche**, un **crash**, un **hydration mismatch**, ou « ça ne marche pas » en lien avec la démo Next :
+
+1. **Ne pas** renvoyer l’utilisateur vers « fais npm run dev toi-même » comme première réponse.
+2. **Exécuter toi-même** dans le terminal, depuis `apps/demo` :
+   - `npm run clean` puis `npm run build` pour valider la compile et régénérer `.next` proprement ;  
+   - si un serveur de dev est nécessaire pour reproduire : `npm run dev:reset` ou `npm run dev` (en arrière-plan si c’est long), selon ce que le repo expose.
+3. **Lire la sortie** du terminal (build errors, stack trace) et corriger le code en conséquence.
+4. **Windows** : le script `dev` du projet libère souvent le port ; préférer `npm run dev:reset` quand `.next` semble corrompu ou après erreurs opaques.
+
+Objectif : l’utilisateur ne doit pas avoir à revenir pour dire « relance le serveur » — c’est inclus dans le flux de debug.
+
+## Stabilité navigation (long terme)
+
+- **Éviter** `next/dynamic(..., { ssr: false })` sur les pages démo principales : ça force un **chunk async** au clic → écrans blancs fréquents après hot-reload ou navigation. Préférer **import statique** et corriger la cause SSR si besoin.
+- **Un seul** `npm run dev` (un port). Les « autres localhost » = autre app ou autre port, pas une 2ᵉ démo obligatoire. Ne pas lancer deux `next dev` sur le même dossier (même `.next`).
+- **Expérience visuelle** : route dédiée `/experience` (import statique) ; `/` reste la bibliothèque en page statique. Anciennes URLs `/gallery`, `/?view=visual` → redirect.
